@@ -14,14 +14,15 @@ listPrice = []
 listPrice2 = []
 listPrice3 = []
 listPrice4 = []
-
+listPrice5 = []
 options = Options()
+
 # options.add_argument('--headless')
 options.add_argument('window-size=1000,1000')
 
 navegador = webdriver.Chrome(options=options) 
 
-######  Magalu  ###################################################################
+""" ######  Magalu  ###################################################################
 navegador.get('https://www.magazineluiza.com.br/')
 
 sleep(0.5)
@@ -165,9 +166,47 @@ for desc in description :
 
     price = site.find('span', attrs={'class': 'a-size-medium a-color-price'})
     
-    listPrice4.append([price.text]) 
+    listPrice4.append([price.text])  """
 
-print(listPrice) 
-print(listPrice2) 
-print(listPrice3) 
-print(listPrice4) 
+
+#####  ZOOM ######################################################################
+navegador.get('https://www.zoom.com.br/')
+
+sleep(0.5)
+#preciso de um for aqui com a lista das descr. dos produtos
+#esperar que o html seja estático. Se houver mudança no html script n da certo.
+for desc in description : 
+    inputZoom = navegador.find_element_by_css_selector('.react-autosuggest__input.search-bar__text-box')
+    inputZoom.send_keys(desc)
+    
+
+    sleep(1)
+
+    searchProduct = navegador.find_element_by_class_name('search-bar__submit-button').click()
+
+    sleep(1)
+    
+    product = navegador.find_element_by_xpath('//*[@id="resultArea"]/div[2]/div/ul/li[2]/article/span/a').click()
+    
+    #sleep(1)
+
+    #clearText = navegador.find_element_by_id('twotabsearchtextbox').clear()
+    
+    sleep(1)
+    page_content = navegador.page_source
+
+    site = BeautifulSoup(page_content, 'html.parser')
+
+    print(site.prettify())
+    Real = site.find('a', attrs={'class': 'PriceBox_Value__2VuFN'}).text
+    #Centavos = site.find('span', attrs={'class': 'PriceBox_Cents__2Wi_D'}).text
+    #lista = [Real,Centavos]
+    #price = ','.join(lista)
+
+    listPrice5.append([Real.text]) 
+
+#print(listPrice) 
+#print(listPrice2) 
+#print(listPrice3) 
+#print(listPrice4) 
+print(listPrice5)

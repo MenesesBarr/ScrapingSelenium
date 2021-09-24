@@ -7,16 +7,21 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 
 #lista de produtos
-description = ['Smart TV LED 32" TCL HDR 32S6500 2 HDMI','Headset Gamer com Microfone JBL Quantum 100',
+description = ['Smart TV LED 32" TCL HDR 32S6500','Headset Gamer com Microfone JBL Quantum 100',
 'Caixa de Som Bluetooth JBL Flip 5']
-#lista de preços magalu
+#lista de preços 
 listPrice = []
+listPrice2 = []
+listPrice3 = []
+listPrice4 = []
 
 options = Options()
 # options.add_argument('--headless')
 options.add_argument('window-size=1000,1000')
 
-navegador = webdriver.Chrome(options=options)
+navegador = webdriver.Chrome(options=options) 
+
+######  Magalu  ###################################################################
 navegador.get('https://www.magazineluiza.com.br/')
 
 sleep(0.5)
@@ -44,11 +49,125 @@ for desc in description :
     price = site.find('span', attrs={'class': 'price-template__text'})
     
     listPrice.append([price.text]) 
+    
+
 
 #lista de preços para pandas
 #print(listPrice)
 
-#dataframe
-dados = pd.DataFrame(listPrice, columns=['price'])
+#dados = pd.DataFrame(listPrice, columns=['price'])
 
-print(dados)
+#print(dados)  
+
+########  Americanas #########################################################
+navegador.get('https://www.americanas.com.br/')
+
+sleep(0.5)
+#preciso de um for aqui com a lista das descr. dos produtos
+#esperar que o html seja estático
+for desc in description : 
+    inputMagalu = navegador.find_element_by_class_name('src-input')
+    inputMagalu.send_keys(desc)
+
+    sleep(1)
+
+    searchProduct = navegador.find_element_by_class_name('src-btn').click()
+
+    sleep(1)
+
+    product = navegador.find_element_by_css_selector('.src__Wrapper-sc-1k0ejj6-3.eflURh').click()
+
+    sleep(1)
+    page_content = navegador.page_source
+
+    site = BeautifulSoup(page_content, 'html.parser')
+
+    #print(site.prettify())
+
+    price = site.find('div', attrs={'class': 'src__BestPrice-sc-1jvw02c-5 cBWOIB priceSales'})
+    
+    listPrice2.append([price.text]) 
+
+
+
+######### Mercado Livre #######################################################
+navegador.get('https://www.mercadolivre.com.br/')
+
+sleep(0.5)
+#preciso de um for aqui com a lista das descr. dos produtos
+#esperar que o html seja estático
+for desc in description : 
+    inputMercadoLivre = navegador.find_element_by_class_name('nav-search-input')
+    inputMercadoLivre.send_keys(desc)   
+    
+    sleep(1)
+
+    searchProduct = navegador.find_element_by_class_name('nav-search-btn').click()
+
+    sleep(1)
+
+    product = navegador.find_element_by_class_name('ui-search-layout__item').click()
+
+    sleep(1)
+
+    clearText = navegador.find_element_by_class_name('nav-search-input').clear()
+    
+    sleep(1)
+    page_content = navegador.page_source
+
+    site = BeautifulSoup(page_content, 'html.parser')
+
+    #print(site.prettify())
+
+    Real = site.find('span', attrs={'class': 'price-tag-fraction'}).text
+    Centavos = site.find('span', attrs={'class': 'price-tag-cents'}).text 
+    lista = [Real,Centavos]
+    price = ','.join(lista)
+
+    #if (Centavos):
+    #    Price = ','.join(lista)
+    #else:
+    #    Price = (Real.text)
+    #break
+    listPrice3.append(price)
+
+
+
+#####  Amazon  ##################################################################
+navegador.get('https://www.amazon.com.br/')
+
+sleep(0.5)
+#preciso de um for aqui com a lista das descr. dos produtos
+#esperar que o html seja estático
+for desc in description : 
+    inputMagalu = navegador.find_element_by_id('twotabsearchtextbox')
+    inputMagalu.send_keys(desc)
+    
+
+    sleep(1)
+
+    searchProduct = navegador.find_element_by_id('nav-search-submit-button').click()
+
+    sleep(1)
+
+    product = navegador.find_element_by_css_selector('.a-section.a-spacing-medium').click()
+    
+    sleep(1)
+
+    clearText = navegador.find_element_by_id('twotabsearchtextbox').clear()
+    
+    sleep(1)
+    page_content = navegador.page_source
+
+    site = BeautifulSoup(page_content, 'html.parser')
+
+    #print(site.prettify())
+
+    price = site.find('span', attrs={'class': 'a-size-medium a-color-price'})
+    
+    listPrice4.append([price.text]) 
+
+print(listPrice) 
+print(listPrice2) 
+print(listPrice3) 
+print(listPrice4) 

@@ -1,3 +1,6 @@
+from os import linesep, link
+from numpy import True_
+from pandas.core.reshape.concat import concat
 import requests
 import pandas as pd
 import re
@@ -5,220 +8,120 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
-from time import sleep
+from time import perf_counter, sleep
 
-#lista de produtos
-description = ['Smart TV LED 32" TCL HDR 32S6500','Headset Gamer com Microfone JBL Quantum 100',
-'Caixa de Som Bluetooth JBL Flip 5']
-#lista de preços 
-listPrice = []
-listPrice2 = []
-listPrice3 = []
-listPrice4 = []
-listPrice51 = []
-listPrice5 = []
+#options.add_argument('--headless')
 options = Options()
-
-# options.add_argument('--headless')
 options.add_argument('window-size=1000,1000')
 
-navegador = webdriver.Chrome(options=options) 
-""" 
-######  Magalu  ###################################################################
-navegador.get('https://www.magazineluiza.com.br/')
+navegador = webdriver.Chrome(options=options)
+#lista de produtos
+listLink = []
+#variável dependente
+listPrice = []
+listPrice1 = []
+#listas variáceis de controle
+listDesc = []
+info = ['Marca','Modelo','Linha']
+func = ['Smart TV','Sistema Operacional','Aplicativos Instalados',
+'Recursos Multimidia','Recursos de TV Digital']
+tela = ['Tipo de Tela','Tamanho da Tela','Resolução de Imagem','Frequência Nativa']
+conect = ['Conexões Sem Fio','Entradas Especiais','Quantidade de Entradas HDMI']
+Especific = ['Altura com base','Altura sem base','Largura',
+'Profundidade com base','Profundidade sem base']
+listX = []
+###### pegando link de todos os produtos ##########################################
+#produto = ['TV','Notebook']
 
+url = navegador.get('https://www.zoom.com.br/search?q=tv')
 sleep(0.5)
-#preciso de um for aqui com a lista das descr. dos produtos
-#esperar que o html seja estático
-for desc in description : 
-    inputMagalu = navegador.find_element_by_css_selector('.field-input-search.ui-autocomplete-input')
-    inputMagalu.send_keys(desc)
 
-    sleep(1)
+page_content = navegador.page_source   #print do html
+site = BeautifulSoup(page_content,'html.parser')
 
-    searchProduct = navegador.find_element_by_class_name('icon-search').click()
+#compreensão de listas para link
+[listLink.append(link['href']) for link in site.find_all('a', attrs={'class':'Cell_Content__1630r'})]
+#print(listLink)
 
-    sleep(1)
-
-    product = navegador.find_element_by_css_selector('.sc-gpAxqO.cEqyhT').click()
-
-    sleep(1)
-    page_content = navegador.page_source
-
-    site = BeautifulSoup(page_content, 'html.parser')
-
-    #print(site.prettify())
-
-    preco = site.find('span', attrs={'class': 'price-template__text'})
-    
-    listPrice.append([preco.text]) 
-    
-
-
-#lista de preços para pandas
-#print(listPrice)
-
-#dados = pd.DataFrame(listPrice, columns=['price'])
-
-#print(dados)   """
-
-########  Americanas #########################################################
-navegador.get('https://www.americanas.com.br/')
-
+#Navegação entre produtos
 sleep(0.5)
-#preciso de um for aqui com a lista das descr. dos produtos
-#esperar que o html seja estático
-for desc in description : 
-    inputMagalu = navegador.find_element_by_class_name('src-input')
-    inputMagalu.send_keys(desc)
+for item in (listLink[3:5]) :
+    linkProduto = navegador.get('https://www.zoom.com.br'+ item)
+    sleep(0.5)
+    page = navegador.page_source
+    capturaHTML = BeautifulSoup(page, 'html.parser')
 
-    sleep(1)
-
-    searchProduct = navegador.find_element_by_class_name('src-btn').click()
-
-    sleep(1)
-
-    product = navegador.find_element_by_css_selector('.src__Wrapper-sc-1k0ejj6-3.eflURh').click()
-
-    sleep(1)
-    page_content = navegador.page_source
-
-    site = BeautifulSoup(page_content, 'html.parser')
-
-    #print(site.prettify())
-
-    price = site.find('div', attrs={'class': 'src__BestPrice-sc-1jvw02c-5 cBWOIB priceSales'})
-    item = price.text
-
-    #biblioteca regex = manipulação de strings por expressões regulares
-    preco = re.sub(r'[A-Z$]','',item)
-    listPrice2.append(preco)   
-
-
-
-""" ######### Mercado Livre #######################################################
-navegador.get('https://www.mercadolivre.com.br/')
-
-sleep(0.5)
-#preciso de um for aqui com a lista das descr. dos produtos
-#esperar que o html seja estático
-for desc in description : 
-    inputMercadoLivre = navegador.find_element_by_class_name('nav-search-input')
-    inputMercadoLivre.send_keys(desc)   
+    #Preços
+    for price in capturaHTML.find_all('a', attrs={'class': 'PriceBox_Value__2VuFN'}):
     
-    sleep(1)
-
-    searchProduct = navegador.find_element_by_class_name('nav-search-btn').click()
-
-    sleep(1)
-
-    product = navegador.find_element_by_class_name('ui-search-layout__item').click()
-
-    sleep(1)
-
-    clearText = navegador.find_element_by_class_name('nav-search-input').clear()
+            item = price.text 
+            preco = re.sub(r'[,]','.',(re.sub(r'[A-Z$.]','',item)))
+            listPrice.append(preco)
+    #print(listPrice)
     
-    sleep(1)
-    page_content = navegador.page_source
+    #list comprehension
+    #lista de num
+    num = min([float(val) for val in listPrice])
+    listPrice1.append(num)
+    print('preco:',listPrice1)
 
-    site = BeautifulSoup(page_content, 'html.parser')
-
-    #print(site.prettify())
-
-    Real = site.find('span', attrs={'class': 'price-tag-fraction'}).text
-    Centavos = site.find('span', attrs={'class': 'price-tag-cents'}).text 
-    lista = [Real,Centavos]
-    preco = ','.join(lista)
-
-    #if (Centavos):
-    #    Price = ','.join(lista)
-    #else:
-    #    Price = (Real.text)
-    #break
-    listPrice3.append(price)
-
-
-
-#####  Amazon  ##################################################################
-navegador.get('https://www.amazon.com.br/')
-
-sleep(0.5)
-#preciso de um for aqui com a lista das descr. dos produtos
-#esperar que o html seja estático
-for desc in description : 
-    inputMagalu = navegador.find_element_by_id('twotabsearchtextbox')
-    inputMagalu.send_keys(desc)
+    #tabelas
+    [listDesc.append(tabela) for tabela in capturaHTML.find_all('table', attrs={'class':'DetailsSection_DetailsTable__W7Gbu'})]
+    #print(listDesc)
+    x = listDesc[0]
+    #Informações básicas
+    dfIB = (pd.read_html(str(listDesc[1]))[0])
+    dfIB.columns = ['legenda','X']
+    dfIB.set_index('legenda', inplace=True_)
+    df1 = (dfIB.T)[info]
+    df1.reset_index()
     
+    #print('Informações básicas:',df1)
+    #print(dfIB)
+    #Características e Funções da TV
+    dfCF = (pd.read_html(str(listDesc[2]))[0])
+    dfCF.columns = ['legenda','X']
+    dfCF.set_index('legenda', inplace=True_)
+    df2 = (dfCF.T)[func]
+    df2.reset_index()
 
-    sleep(1)
-
-    searchProduct = navegador.find_element_by_id('nav-search-submit-button').click()
-
-    sleep(1)
-
-    product = navegador.find_element_by_css_selector('.a-section.a-spacing-medium').click()
+    #print('Características e Funções da TV:',df2)
+    #Características da Tela
+    dfCT = (pd.read_html(str(listDesc[3]))[0])
+    dfCT.columns = ['legenda','X']
+    dfCT.set_index('legenda', inplace=True_)
+    df3 = (dfCT.T)[tela]
+    df3.reset_index()
     
-    sleep(1)
-
-    clearText = navegador.find_element_by_id('twotabsearchtextbox').clear()
+    #print('Características da Tela:',df3)
+    #Conexões
+    dfC = (pd.read_html(str(listDesc[4]))[0])
+    dfC.columns = ['legenda','X']
+    dfC.set_index('legenda', inplace=True_)
+    df4 = (dfC.T)[conect]
+    df4.reset_index()
     
-    sleep(1)
-    page_content = navegador.page_source
-
-    site = BeautifulSoup(page_content, 'html.parser')
-
-    #print(site.prettify())
-
-    price = site.find('span', attrs={'class': 'a-size-medium a-color-price'})
-    item = price.text
-    preco = ','.join([int(s) for s in item.split() if s.isdigit()])
-
-    listPrice4.append(preco) 
-
- 
- #####  ZOOM ######################################################################
-#Problema: Patrocinado
-navegador.get('https://www.zoom.com.br/')
-
-sleep(0.5)
-#preciso de um for aqui com a lista das descr. dos produtos
-#esperar que o html seja estático. Se houver mudança no html script n da certo.
-for desc in description : 
-    inputZoom = navegador.find_element_by_css_selector('.react-autosuggest__input.search-bar__text-box')
-    inputZoom.send_keys('Smart TV LED 32" TCL HDR 32S6500')
+    #print('Conexões:',df4)
+    #Especificações
+    dfE= (pd.read_html(str(listDesc[5]))[0])
+    dfE.columns = ['legenda','X']
+    dfE.set_index('legenda', inplace=True_)
+    df5 = (dfE.T)[Especific]
+    df5.reset_index()
     
-    sleep(1)
-
-    searchProduct = navegador.find_element_by_class_name('search-bar__submit-button').click()
+    #print('Especificações:',df5)
+    #Concatenando dataframes
+    dfs = pd.concat([df1,df2,df3,df4,df5],axis=1, ignore_index=True_) 
+    listDesc.clear()
     
-    #Pretendo fazer um if para bot identificar patrocinados********************
-    #sleep(3)
-    #page_content = navegador.page_source
+    listX.append(dfs)
 
-    #site = BeautifulSoup(page_content, 'html.parser')
-    #print(site.prettify())
-    #patrocinadoZoom = site.find('span', attrs={'class': 'Text_Text___RzD- Text_LabelXsRegular__2Ax6x Badge_Label__2vAVv'}).text
-    
-    sleep(1)
-    #if patrocinadoZoom :
-        #product = navegador.find_element_by_xpath('//*[@id="resultArea"]/div[2]/div/ul/li[1]/article/span/a').click()
-    #else :
-    #product = navegador.find_element_by_xpath('//*[@id="resultArea"]/div[2]/div/ul/li[2]/article/span/a').click()
-   
-    #LimparZoom = navegador.find_element_by_css_selector('.react-autosuggest__input.search-bar__text-box').clear()
-    
-    sleep(5)
-    page_content = navegador.page_source
 
-    site = BeautifulSoup(page_content, 'html.parser')
-
-    #print(site.prettify())
-    for price in site.find_all('strong', attrs={'class': 'Text_Text___RzD- Text_LabelMdBold__3KBIj CellPrice_MainValue__3s0iP'}):
-    
-        listPrice51.append([price.text]) 
-listPrice5.append(listPrice51) """
-#print(listPrice) 
-print(listPrice2) 
-#print(listPrice3) 
-#print(listPrice4)  
-#print(listPrice5)
+#print('x1:', listX[0])   
+#print('x2:', listX[1])  
+# 
+# Dados finais 
+tabela = pd.concat(listX, axis=0)
+tabela.reset_index()
+tabela['preco'] = listPrice1
+print(tabela)

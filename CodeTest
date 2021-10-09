@@ -20,15 +20,24 @@ listLink = []
 #variável dependente
 listPrice = []
 listPrice1 = []
+
+####  LEGENDA    #################################################################
+legenda = ['Marca','Modelo','Linha','Smart TV','Sistema Operacional','Aplicativos Instalados',
+'Recursos Multimidia','Recursos de TV Digital','Tipo de Tela','Tamanho da Tela',
+'Resolução de Imagem','Conexões Sem Fio','Entradas Especiais',
+'Quantidade de Entradas HDMI','Altura com base','Altura sem base','Largura',
+'Profundidade com base','Profundidade sem base','Preco']
+
 #listas variáceis de controle
 listDesc = []
 info = ['Marca','Modelo','Linha']
 func = ['Smart TV','Sistema Operacional','Aplicativos Instalados',
 'Recursos Multimidia','Recursos de TV Digital']
-tela = ['Tipo de Tela','Tamanho da Tela','Resolução de Imagem','Frequência Nativa']
+tela = ['Tipo de Tela','Tamanho da Tela','Resolução de Imagem']
 conect = ['Conexões Sem Fio','Entradas Especiais','Quantidade de Entradas HDMI']
 Especific = ['Altura com base','Altura sem base','Largura',
 'Profundidade com base','Profundidade sem base']
+
 listX = []
 ###### pegando link de todos os produtos ##########################################
 #produto = ['TV','Notebook']
@@ -65,49 +74,49 @@ for item in (listLink[3:5]) :
     listPrice1.append(num)
     print('preco:',listPrice1)
 
-    #tabelas
+    #tabelas # cabe  metodo def aqui.
     [listDesc.append(tabela) for tabela in capturaHTML.find_all('table', attrs={'class':'DetailsSection_DetailsTable__W7Gbu'})]
     #print(listDesc)
     x = listDesc[0]
     #Informações básicas
     dfIB = (pd.read_html(str(listDesc[1]))[0])
-    dfIB.columns = ['legenda','X']
+    dfIB.columns = ['legenda','TV']
     dfIB.set_index('legenda', inplace=True_)
     df1 = (dfIB.T)[info]
-    df1.reset_index()
     
-    #print('Informações básicas:',df1)
+    
+    print('Informações básicas:',df1)
     #print(dfIB)
     #Características e Funções da TV
     dfCF = (pd.read_html(str(listDesc[2]))[0])
-    dfCF.columns = ['legenda','X']
+    dfCF.columns = ['legenda','TV']
     dfCF.set_index('legenda', inplace=True_)
     df2 = (dfCF.T)[func]
-    df2.reset_index()
+    
 
     #print('Características e Funções da TV:',df2)
     #Características da Tela
     dfCT = (pd.read_html(str(listDesc[3]))[0])
-    dfCT.columns = ['legenda','X']
+    dfCT.columns = ['legenda','TV']
     dfCT.set_index('legenda', inplace=True_)
     df3 = (dfCT.T)[tela]
-    df3.reset_index()
+    
     
     #print('Características da Tela:',df3)
     #Conexões
     dfC = (pd.read_html(str(listDesc[4]))[0])
-    dfC.columns = ['legenda','X']
+    dfC.columns = ['legenda','TV']
     dfC.set_index('legenda', inplace=True_)
     df4 = (dfC.T)[conect]
-    df4.reset_index()
+    
     
     #print('Conexões:',df4)
     #Especificações
     dfE= (pd.read_html(str(listDesc[5]))[0])
-    dfE.columns = ['legenda','X']
+    dfE.columns = ['legenda','TV']
     dfE.set_index('legenda', inplace=True_)
     df5 = (dfE.T)[Especific]
-    df5.reset_index()
+    
     
     #print('Especificações:',df5)
     #Concatenando dataframes
@@ -122,6 +131,8 @@ for item in (listLink[3:5]) :
 # 
 # Dados finais 
 tabela = pd.concat(listX, axis=0)
-tabela.reset_index()
+
 tabela['preco'] = listPrice1
+tabela.columns = [legenda]
+
 print(tabela)
